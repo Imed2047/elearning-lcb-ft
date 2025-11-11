@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formation LCB-FT</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        header h1 { font-size: 32px; margin-bottom: 10px; }
+        header p { font-size: 16px; opacity: 0.9; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-number { font-size: 32px; font-weight: bold; color: #667eea; }
+        .stat-label { font-size: 14px; color: #666; margin-top: 5px; }
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .module-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .module-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+        }
+        .module-header h3 { font-size: 16px; margin-bottom: 5px; }
+        .module-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.3);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        .module-body { padding: 15px; }
+        .module-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .module-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .module-button:hover { background: #764ba2; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 { font-size: 22px; }
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+        }
+        .modal-body { padding: 30px; }
+        .question-number { font-size: 12px; color: #667eea; font-weight: bold; margin-bottom: 8px; }
+        .question-text { font-size: 18px; font-weight: bold; margin-bottom: 20px; color: #333; }
+        .options { margin-bottom: 20px; }
+        .option {
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .option:hover { border-color: #667eea; background: #f5f7ff; }
+        .option input { margin-top: 3px; cursor: pointer; }
+        .option.selected { border-color: #667eea; background: #f0f4ff; font-weight: bold; }
+        .option.correct { border-color: #10b981; background: #ecfdf5; }
+        .option.wrong { border-color: #ef4444; background: #fef2f2; }
+        .explanation {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+        .explanation.show { display: block; }
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+        .nav-buttons { display: flex; gap: 10px; }
+        .nav-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .nav-btn:hover:not(:disabled) { background: #764ba2; }
+        .results {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+        }
+        .score-high { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .score-medium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .score-low { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .results h3 { font-size: 24px; margin: 20px 0; }
+        .results p { font-size: 16px; color: #666; margin-bottom: 20px; }
+        .results-buttons { display: flex; gap: 10px; justify-content: center; }
+        .results-btn { padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .results-btn.primary { background: #667eea; color: white; }
+        .results-btn.secondary { background: #e0e0e0; color: #333; }
+        @media (max-width: 600px) {
+            header h1 { font-size: 24px; }
+            .modules-grid { grid-template-columns: 1fr; }
+            .modal-content { max-height: 90vh; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-shield-alt"></i> Formation LCB-FT</h1>
+            <p>90 modules de formation complète en Lutte Contre le Blanchiment de Capitaux</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="stat-modules">0</div>
+                <div class="stat-label">Modules</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-completed">0</div>
+                <div class="stat-label">Complétés</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="stat-progress">0%</div>
+                <div class="stat-label">Progression</div>
+            </div>
+        </div>
+
+        <div class="modules-grid" id="modules-grid"></div>
+    </div>
+
+    <div class="modal" id="quizModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Module</h2>
+                <button class="close-btn" onclick="closeQuiz()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-footer">
+                <div style="font-size: 13px; color: #666;">
+                    Question <span id="current-q">1</span> / <span id="total-q">5</span>
+                </div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" id="btn-prev" onclick="prevQuestion()" disabled>← Précédent</button>
+                    <button class="nav-btn" id="btn-next" onclick="nextQuestion()">Suivant →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allData = null;
+        let currentModule = null;
+        let currentQuestionIdx = 0;
+        let answers = {};
+        let completed = JSON.parse(localStorage.getItem('lcbft-completed') || '{}');
+
+        async function loadData() {
+            try {
+                const response = await fetch('data.json');
+                allData = await response.json();
+                console.log('Données chargées:', allData);
+                renderModules();
+                updateStats();
+            } catch (e) {
+                console.error('Erreur:', e);
+                document.getElementById('modules-grid').innerHTML = 
+                    '<div style="grid-column:1/-1;background:#ff6b6b;color:white;padding:20px;border-radius:8px;"><strong>Erreur:</strong> Impossible de charger les modules. Assurez-vous que data.json est présent.</div>';
+            }
+        }
+
+        function renderModules() {
+            const container = document.getElementById('modules-grid');
+            container.innerHTML = '';
+
+            if (!allData.sections) {
+                console.error('Pas de sections trouvées');
+                return;
+            }
+
+            let moduleCount = 0;
+            allData.sections.forEach((section, sidx) => {
+                section.modules.forEach(module => {
+                    moduleCount++;
+                    const isCompleted = completed[module.id];
+                    
+                    const card = document.createElement('div');
+                    card.className = 'module-card';
+                    card.innerHTML = `
+                        <div class="module-header">
+                            <h3>${module.title}</h3>
+                            <span class="module-badge">${module.difficulty}</span>
+                        </div>
+                        <div class="module-body">
+                            <div class="module-meta">
+                                <span><i class="fas fa-clock"></i> ${module.duration} min</span>
+                                <span><i class="fas fa-question-circle"></i> ${module.quiz ? module.quiz.questions.length : 0} questions</span>
+                            </div>
+                            <button class="module-button" onclick="startQuiz('${module.id}')">
+                                ${isCompleted ? '✓ Complété' : 'Commencer'}
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            });
+
+            document.getElementById('stat-modules').textContent = moduleCount;
+        }
+
+        function startQuiz(moduleId) {
+            // Trouver le module
+            let found = null;
+            allData.sections.forEach(section => {
+                section.modules.forEach(m => {
+                    if (m.id === moduleId) found = m;
+                });
+            });
+
+            if (!found) {
+                console.error('Module non trouvé:', moduleId);
+                return;
+            }
+
+            currentModule = found;
+            currentQuestionIdx = 0;
+            answers = {};
+
+            document.getElementById('modal-title').textContent = currentModule.title;
+            document.getElementById('total-q').textContent = currentModule.quiz.questions.length;
+            document.getElementById('quizModal').classList.add('show');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = currentModule.quiz.questions[currentQuestionIdx];
+            const total = currentModule.quiz.questions.length;
+            
+            document.getElementById('current-q').textContent = currentQuestionIdx + 1;
+            document.getElementById('btn-prev').disabled = currentQuestionIdx === 0;
+            document.getElementById('btn-next').textContent = 
+                currentQuestionIdx === total - 1 ? 'Terminer' : 'Suivant →';
+
+            let html = `
+                <div class="question-number">Question ${currentQuestionIdx + 1}</div>
+                <div class="question-text">${q.question}</div>
+                <div class="options">
+            `;
+
+            q.options.forEach(option => {
+                const isSelected = answers[currentQuestionIdx] === option.id;
+                const isAnswered = currentQuestionIdx in answers;
+                const isCorrect = option.correct;
+
+                let optionClass = 'option';
+                if (isAnswered) {
+                    if (isCorrect) optionClass += ' correct';
+                    else if (isSelected) optionClass += ' wrong';
+                } else if (isSelected) {
+                    optionClass += ' selected';
+                }
+
+                html += `
+                    <label class="${optionClass}">
+                        <input type="radio" 
+                            name="option_${currentQuestionIdx}"
+                            value="${option.id}"
+                            ${isSelected ? 'checked' : ''}
+                            ${isAnswered ? 'disabled' : `onchange="selectAnswer('${option.id}')"`}
+                        />
+                        <span>${option.text}</span>
+                    </label>
+                `;
+            });
+
+            html += '</div>';
+
+            if (currentQuestionIdx in answers) {
+                const selectedOpt = q.options.find(o => o.id === answers[currentQuestionIdx]);
+                if (selectedOpt && selectedOpt.correct && q.explanation) {
+                    html += `<div class="explanation show"><strong>💡 Explication:</strong> ${q.explanation}</div>`;
+                }
+            }
+
+            document.getElementById('modal-body').innerHTML = html;
+        }
+
+        function selectAnswer(optId) {
+            answers[currentQuestionIdx] = optId;
+            showQuestion();
+        }
+
+        function nextQuestion() {
+            const total = currentModule.quiz.questions.length;
+            if (currentQuestionIdx < total - 1) {
+                currentQuestionIdx++;
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIdx > 0) {
+                currentQuestionIdx--;
+                showQuestion();
+            }
+        }
+
+        function showResults() {
+            const questions = currentModule.quiz.questions;
+            let correctCount = 0;
+
+            Object.keys(answers).forEach(idx => {
+                const q = questions[parseInt(idx)];
+                const correctOpt = q.options.find(o => o.correct);
+                if (answers[idx] === correctOpt.id) {
+                    correctCount++;
+                }
+            });
+
+            const score = Math.round((correctCount / questions.length) * 100);
+            const passing = currentModule.quiz.passingscore || 60;
+            const passed = score >= passing;
+
+            if (passed) {
+                completed[currentModule.id] = true;
+                localStorage.setItem('lcbft-completed', JSON.stringify(completed));
+            }
+
+            let scoreClass = score >= 80 ? 'score-high' : score >= 60 ? 'score-medium' : 'score-low';
+
+            const html = `
+                <div class="results">
+                    <div class="score-circle ${scoreClass}">${score}%</div>
+                    <h3>${passed ? '🎉 Réussi!' : '📚 À améliorer'}</h3>
+                    <p>${correctCount} / ${questions.length} bonnes réponses</p>
+                    <div class="results-buttons">
+                        <button class="results-btn primary" onclick="closeQuiz(); renderModules(); updateStats();">Continuer</button>
+                        <button class="results-btn secondary" onclick="closeQuiz(); startQuiz('${currentModule.id}');">Refaire</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modal-body').innerHTML = html;
+            document.getElementById('modal-footer').style.display = 'none';
+        }
+
+        function closeQuiz() {
+            document.getElementById('quizModal').classList.remove('show');
+            document.getElementById('modal-footer').style.display = 'flex';
+            renderModules();
+            updateStats();
+        }
+
+        function updateStats() {
+            const completedCount = Object.keys(completed).length;
+            const totalCount = document.getElementById('stat-modules').textContent;
+            const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+            document.getElementById('stat-completed').textContent = completedCount;
+            document.getElementById('stat-progress').textContent = progress + '%';
+        }
+
+        // Initialiser
+        loadData();
+    </script>
+</body>
+</html>
